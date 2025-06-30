@@ -8,8 +8,9 @@ import org.example.studyregistry.StudyTaskManager;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RegistrySearch implements Search<String>{
+public class RegistrySearch implements Search<String> {
     private SearchLog searchLog = new SearchLog("Registry Search");
+
     public RegistrySearch(){}
 
     @Override
@@ -27,9 +28,10 @@ public class RegistrySearch implements Search<String>{
         results.addAll(HabitTracker.getHabitTracker().searchInHabits(text));
         results.addAll(TodoTracker.getInstance().searchInTodos(text));
         results.addAll(StudyTaskManager.getStudyTaskManager().searchInRegistries(text));
-        this.searchLog.addSearchHistory(text);
-        this.searchLog.setNumUsages(this.searchLog.getNumUsages() + 1);
-        results.add("\nLogged in: " + this.searchLog.getLogName());
+
+        searchLog.logSearch(text);
+
+        results.add("\nLogged in: " + searchLog.getLogName());
         return results;
     }
 }
