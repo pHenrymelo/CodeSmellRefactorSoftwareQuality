@@ -63,22 +63,19 @@ public class StudyMaterial{
         response.put("Audio References", 0);
         response.put("Video References", 0);
         response.put("Text References", 0);
+
         for (Reference reference : references) {
-            if (reference.getClass() == AudioReference.class) {
-                Integer audioCount = response.get("Audio References");
-                response.put("Audio References", audioCount + 1);
-            } else if (reference.getClass() == VideoReference.class) {
-                if(((VideoReference) reference).handleStreamAvailability()){
-                    Integer videoCount = response.get("Video References");
-                    response.put("Video References", videoCount + 1);
-                }
-            } else if (reference.getClass() == TextReference.class){
-                if(((TextReference) reference).handleTextAccess()){
-                    Integer textCount = response.get("Text References");
-                    response.put("Text References", textCount + 1);
-                }
+            if (!reference.isCountable()) continue;
+
+            if (reference instanceof AudioReference) {
+                response.put("Audio References", response.get("Audio References") + 1);
+            } else if (reference instanceof VideoReference) {
+                response.put("Video References", response.get("Video References") + 1);
+            } else if (reference instanceof TextReference) {
+                response.put("Text References", response.get("Text References") + 1);
             }
         }
+
         setReferenceCount(response);
         return response;
     }
