@@ -1,16 +1,13 @@
 package org.example.studyplanner;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-
 
 public class TodoTracker {
     private List<ToDo> toDos = new ArrayList<>();
     private Map<Integer, List<LocalDateTime>> tracker;
     private Integer nextId;
     private static TodoTracker instance;
-
 
     private TodoTracker() {
         this.tracker = new HashMap<>();
@@ -33,42 +30,14 @@ public class TodoTracker {
 
         StringBuilder str = new StringBuilder();
         for (ToDo toDo : toDos) {
-            str.append(formatToDoWithTracks(toDo));
+            str.append(toDo.formatWithTracks(this.tracker));
         }
         return str.toString();
     }
 
-    private String formatToDoWithTracks(ToDo toDo) {
-        StringBuilder str = new StringBuilder();
-        str.append(toDo.toString()).append("\n");
-        appendExecutionTimes(str, toDo.getId());
-        return str.toString();
-    }
-
-    private void appendExecutionTimes(StringBuilder str, Integer id) {
-        List<LocalDateTime> todosDate = this.tracker.get(id);
-
-        if (todosDate == null) {
-            str.append("No tracks found\n");
-            return;
-        }
-
-        for (LocalDateTime ldt : todosDate) {
-            str.append(formatDateTime(ldt)).append("\n");
-        }
-    }
-
-    private String formatDateTime(LocalDateTime dateTime) {
-        String pattern = "yyyy-MM-dd HH:mm:ss";
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
-        return formatter.format(dateTime);
-    }
-
-
-    public void addToDoExecutionTime(Integer id){
+    public void addToDoExecutionTime(Integer id) {
         List<LocalDateTime> et = tracker.computeIfAbsent(id, k -> new ArrayList<>());
-        LocalDateTime now = LocalDateTime.now();
-        et.add(now);
+        et.add(LocalDateTime.now());
     }
 
     public List<ToDo> getToDos() {
@@ -102,14 +71,12 @@ public class TodoTracker {
     }
 
     public List<String> searchInTodos(String search) {
-        List<String> todos = new ArrayList<>();
+        List<String> result = new ArrayList<>();
         for (ToDo toDo : toDos) {
-            if (toDo.getTitle().toLowerCase().contains(search.toLowerCase()) || toDo.getDescription().toLowerCase().contains(search.toLowerCase())) {
-                todos.add(toDo.toString());
+            if (toDo.matchesSearch(search)) {
+                result.add(toDo.toString());
             }
         }
-        return todos;
+        return result;
     }
-
-
 }

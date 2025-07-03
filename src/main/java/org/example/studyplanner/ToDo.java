@@ -3,8 +3,7 @@ package org.example.studyplanner;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class ToDo implements PlannerMaterial {
     private Integer id;
@@ -56,25 +55,32 @@ public class ToDo implements PlannerMaterial {
         return title.toLowerCase().contains(lower) || description.toLowerCase().contains(lower);
     }
 
+    public String formatWithTracks(Map<Integer, List<LocalDateTime>> tracker) {
+        StringBuilder str = new StringBuilder();
+        str.append(this.toString()).append("\n");
+
+        List<LocalDateTime> tracks = tracker.get(this.id);
+        appendFormattedTracks(str, tracks);
+
+        return str.toString();
+    }
+
+    private void appendFormattedTracks(StringBuilder str, List<LocalDateTime> tracks) {
+        if (tracks == null || tracks.isEmpty()) {
+            str.append("No tracks found\n");
+            return;
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        for (LocalDateTime ldt : tracks) {
+            str.append(formatter.format(ldt)).append("\n");
+        }
+    }
+
     // Getters e Setters
-
+    public Integer getId() { return id; }
+    public String getTitle() { return title; }
+    public String getDescription() { return description; }
+    public int getPriority() { return priority; }
     public void setId(Integer id) { this.id = id; }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public int getPriority() {
-        return priority;
-    }
-
-
 }

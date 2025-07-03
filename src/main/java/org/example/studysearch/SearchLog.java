@@ -26,7 +26,7 @@ public class SearchLog {
         this.isLocked = false;
     }
 
-    // ✅ API moderna e usada internamente pelas classes de busca
+    // API moderna e usada internamente pelas classes de busca
     public void logSearch(String term) {
         if (isLocked) return;
 
@@ -35,7 +35,7 @@ public class SearchLog {
         numUsages++;
     }
 
-    // ✅ Método legado restaurado para compatibilidade com testes
+    // Método legado restaurado para compatibilidade com testes
     public void addSearchHistory(String searchHistory) {
         this.searchHistory.add(searchHistory);
     }
@@ -77,6 +77,17 @@ public class SearchLog {
         results.addAll(StudyTaskManager.getStudyTaskManager().searchInRegistries(text));
 
         logSearch(text);
+        results.add("\nLogged in: " + getLogName());
+        return results;
+    }
+
+    // Novo método para pesquisa exclusiva em materiais
+    public List<String> searchMaterials(String text) {
+        List<String> results = new ArrayList<>();
+        results.addAll(StudyMaterial.getStudyMaterial().searchInMaterials(text));
+
+        logSearch(text);
+
         results.add("\nLogged in: " + getLogName());
         return results;
     }
