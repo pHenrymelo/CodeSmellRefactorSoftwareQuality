@@ -1,5 +1,11 @@
 package org.example.studysearch;
 
+import org.example.studycards.CardManager;
+import org.example.studyplanner.HabitTracker;
+import org.example.studyplanner.TodoTracker;
+import org.example.studyregistry.StudyMaterial;
+import org.example.studyregistry.StudyTaskManager;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,30 +15,37 @@ public class SearchLog {
     private List<String> searchHistory;
     private Map<String, Integer> searchCount;
     private boolean isLocked;
-    private Integer numUsages;
+    private int numUsages;
     private String logName;
 
     public SearchLog(String logName) {
-        searchHistory = new ArrayList<>();
-        searchCount = new HashMap<>();
+        this.searchHistory = new ArrayList<>();
+        this.searchCount = new HashMap<>();
         this.logName = logName;
-        numUsages = 0;
-        isLocked = false;
+        this.numUsages = 0;
+        this.isLocked = false;
     }
+
+    // API moderna e usada internamente pelas classes de busca
+    public void logSearch(String term) {
+        if (isLocked) return;
+
+        searchHistory.add(term);
+        searchCount.put(term, searchCount.getOrDefault(term, 0) + 1);
+        numUsages++;
+    }
+
+    // Método legado restaurado para compatibilidade com testes
     public void addSearchHistory(String searchHistory) {
         this.searchHistory.add(searchHistory);
     }
+
     public List<String> getSearchHistory() {
         return searchHistory;
     }
-    public void setSearchHistory(List<String> searchHistory) {
-        this.searchHistory = searchHistory;
-    }
+
     public Map<String, Integer> getSearchCount() {
         return searchCount;
-    }
-    public void setSearchCount(Map<String, Integer> searchCount) {
-        this.searchCount = searchCount;
     }
 
     public boolean isLocked() {
@@ -43,12 +56,8 @@ public class SearchLog {
         isLocked = locked;
     }
 
-    public Integer getNumUsages() {
+    public int getNumUsages() {
         return numUsages;
-    }
-
-    public void setNumUsages(Integer numUsages) {
-        this.numUsages = numUsages;
     }
 
     public String getLogName() {
@@ -57,5 +66,42 @@ public class SearchLog {
 
     public void setLogName(String logName) {
         this.logName = logName;
+    }
+
+    public List<String> performGeneralSearch(String text) {
+        List<String> results = new ArrayList<>();
+        results.addAll(CardManager.getCardManager().searchInCards(text));
+        results.addAll(HabitTracker.getHabitTracker().searchInHabits(text));
+        results.addAll(TodoTracker.getInstance().searchInTodos(text));
+        results.addAll(StudyMaterial.getStudyMaterial().searchInMaterials(text));
+        results.addAll(StudyTaskManager.getStudyTaskManager().searchInRegistries(text));
+
+        logSearch(text);
+        results.add("\nLogged in: " + getLogName());
+        return results;
+    }
+
+    // Novo método para pesquisa exclusiva em materiais
+    public List<String> searchMaterials(String text) {
+        List<String> results = new ArrayList<>();
+        results.addAll(StudyMaterial.getStudyMaterial().searchInMaterials(text));
+
+        logSearch(text);
+
+        results.add("\nLogged in: " + getLogName());
+        return results;
+    }
+
+    public List<String> searchWithLog(String text) {
+        List<String> results = new ArrayList<>();
+        results.addAll(CardManager.getCardManager().searchInCards(text));
+        results.addAll(HabitTracker.getHabitTracker().searchInHabits(text));
+        results.addAll(TodoTracker.getInstance().searchInTodos(text));
+        results.addAll(StudyTaskManager.getStudyTaskManager().searchInRegistries(text));
+
+        logSearch(text);
+
+        results.add("\nLogged in: " + getLogName());
+        return results;
     }
 }
