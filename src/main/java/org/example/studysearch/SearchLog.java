@@ -91,4 +91,17 @@ public class SearchLog {
         results.add("\nLogged in: " + getLogName());
         return results;
     }
+
+    public List<String> searchWithLog(String text) {
+        List<String> results = new ArrayList<>();
+        results.addAll(CardManager.getCardManager().searchInCards(text));
+        results.addAll(HabitTracker.getHabitTracker().searchInHabits(text));
+        results.addAll(TodoTracker.getInstance().searchInTodos(text));
+        results.addAll(StudyTaskManager.getStudyTaskManager().searchInRegistries(text));
+
+        logSearch(text);
+
+        results.add("\nLogged in: " + getLogName());
+        return results;
+    }
 }
