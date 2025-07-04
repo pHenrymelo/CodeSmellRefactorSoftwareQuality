@@ -92,23 +92,78 @@ public class StudyRegistryController {
 
     private void handleSetSteps(StudyPlan studyPlan) {
         handleMethodHeader("Study Plan Edit");
-        System.out.println("""
-            Type the following info:
-            firstStep, resetStudyMechanism, consistentStep, seasonalSteps, basicSteps,
-            mainObjectiveTitle, mainGoalTitle, mainMaterialTopic, mainTask,
-            numberOfSteps (int), isImportant (boolean), durationInDays (long)
-        """);
+        printInstructions();
+
+        List<String> stringProperties = readStringProperties(9);
+        int numberOfSteps = readInt();
+        boolean isImportant = readBoolean();
+        long durationInDays = readLong();
 
         LocalDateTime createdAt = LocalDateTime.now();
-        LocalDateTime endsAt = createdAt.plusDays(Long.parseLong(getInput()));
+        LocalDateTime endsAt = createdAt.plusDays(durationInDays);
 
-        studyPlan.assignSteps(
-                getInput(), getInput(), getInput(), getInput(), getInput(),
-                getInput(), getInput(), getInput(), getInput(),
-                Integer.parseInt(getInput()), Boolean.parseBoolean(getInput()),
-                createdAt, endsAt
-        );
+        StudyStepDetails details = buildStudyStepDetails(stringProperties, numberOfSteps, isImportant, createdAt, endsAt);
+
+        studyPlan.assignSteps(details);
     }
+
+    private void printInstructions() {
+        System.out.println("""
+    Digite os seguintes campos, cada um seguido de ENTER:
+    1) firstStep
+    2) resetStudyMechanism
+    3) consistentStep
+    4) seasonalSteps
+    5) basicSteps
+    6) mainObjectiveTitle
+    7) mainGoalTitle
+    8) mainMaterialTopic
+    9) mainTask
+    10) numberOfSteps (int)
+    11) isImportant (boolean)
+    12) durationInDays (long)
+    """);
+    }
+
+    private List<String> readStringProperties(int count) {
+        List<String> properties = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            properties.add(getInput());
+        }
+        return properties;
+    }
+
+    private int readInt() {
+        return Integer.parseInt(getInput());
+    }
+
+    private boolean readBoolean() {
+        return Boolean.parseBoolean(getInput());
+    }
+
+    private long readLong() {
+        return Long.parseLong(getInput());
+    }
+
+    private StudyStepDetails buildStudyStepDetails(List<String> stringProperties, int numberOfSteps, boolean isImportant,
+                                                   LocalDateTime startDate, LocalDateTime endDate) {
+        return new StudyStepDetails.Builder()
+                .firstStep(stringProperties.get(0))
+                .resetStudyMechanism(stringProperties.get(1))
+                .consistentStep(stringProperties.get(2))
+                .seasonalSteps(stringProperties.get(3))
+                .basicSteps(stringProperties.get(4))
+                .mainObjectiveTitle(stringProperties.get(5))
+                .mainGoalTitle(stringProperties.get(6))
+                .mainMaterialTopic(stringProperties.get(7))
+                .mainTask(stringProperties.get(8))
+                .numberOfSteps(numberOfSteps)
+                .isImportant(isImportant)
+                .startDate(startDate)
+                .endDate(endDate)
+                .build();
+    }
+
 
     private void handleAddStudyPlan() {
         getStudyPlanInfo();
