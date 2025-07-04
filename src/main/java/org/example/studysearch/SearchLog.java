@@ -104,4 +104,10 @@ public class SearchLog {
         results.add("\nLogged in: " + getLogName());
         return results;
     }
+
+    public void printLog() {
+        String response = getLogName() + " was used: " + getNumUsages() + " times\nSearch Log\n";
+        response += String.join(", ", getSearchHistory());
+        System.out.println(response);
+    }
 }
