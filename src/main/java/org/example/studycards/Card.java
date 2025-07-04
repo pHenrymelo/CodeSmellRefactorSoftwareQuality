@@ -29,4 +29,12 @@ public class Card {
         setQuestion(question);
         setAnswer(answer);
     }
+
+    public boolean contains(String search) {
+        return question.contains(search) || answer.contains(search);
+    }
+
+    public boolean isValid() {
+        return question != null && !question.isEmpty() && answer != null && !answer.isEmpty();
+    }
 }
