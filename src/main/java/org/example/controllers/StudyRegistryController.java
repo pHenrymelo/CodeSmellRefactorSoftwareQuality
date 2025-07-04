@@ -282,18 +282,28 @@ public class StudyRegistryController {
 
     private void getWeekInfo() {
         System.out.println("""
-            (Study Task Manager Week Set Up) Type the following info:
-            planName, objectiveTitle, objectiveDescription, materialTopic,
-            materialFormat, goal, reminderTitle, reminderDescription,
-            mainTaskTitle, mainHabit, mainCardStudy
-        """);
+        (Study Task Manager Week Set Up) Type the following info:
+        planName, objectiveTitle, objectiveDescription, materialTopic,
+        materialFormat, goal, reminderTitle, reminderDescription,
+        mainTaskTitle, mainHabit, mainCardStudy
+    """);
 
-        studyTaskManager.setUpWeek(
-                getInput(), getInput(), getInput(), getInput(), getInput(),
-                getInput(), getInput(), getInput(), getInput(), getInput(), getInput()
-        );
+        WeekSetupData data = new WeekSetupData.Builder()
+                .planName(getInput())
+                .objectiveTitle(getInput())
+                .objectiveDescription(getInput())
+                .materialTopic(getInput())
+                .materialFormat(getInput())
+                .goal(getInput())
+                .reminderTitle(getInput())
+                .reminderDescription(getInput())
+                .mainTaskTitle(getInput())
+                .mainHabit(getInput())
+                .mainCardStudy(getInput())
+                .build();
+
+        studyTaskManager.setUpWeek(data);
     }
-
     // --- Responsibilities ---
 
     private void handleGetWeekResponsibilities() {
