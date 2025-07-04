@@ -1,8 +1,5 @@
 package org.example.studysearch;
 
-import org.example.studyregistry.StudyMaterial;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public class MaterialSearch implements Search<String> {
@@ -12,20 +9,10 @@ public class MaterialSearch implements Search<String> {
 
     @Override
     public List<String> search(String text) {
-        return handleMaterialSearch(text);
+        return searchLog.searchMaterials(text);
     }
 
     public SearchLog getSearchLog() {
         return searchLog;
-    }
-
-    private List<String> handleMaterialSearch(String text){
-        List<String> results = new ArrayList<>();
-        results.addAll(StudyMaterial.getStudyMaterial().searchInMaterials(text));
-
-        searchLog.logSearch(text);
-
-        results.add("\nLogged in: " + searchLog.getLogName());
-        return results;
     }
 }

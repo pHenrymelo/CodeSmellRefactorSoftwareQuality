@@ -52,18 +52,25 @@ public class KanbanView {
 
         StringBuilder sb = new StringBuilder();
         for (State state : State.values()) {
-            sb.append(state.name()).append(":\n");
-            List<PlannerMaterial> materials = kanban.get(state);
-            if (materials.isEmpty()) {
-                sb.append("No material found\n");
-            } else {
-                for (PlannerMaterial material : materials) {
-                    sb.append("- ").append(material.toString()).append("\n");
-                }
+            sb.append(formatStateView(state));
+        }
+        return sb.toString();
+    }
+
+    private String formatStateView(State state) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(state.name()).append(":\n");
+        List<PlannerMaterial> materials = kanban.get(state);
+        if (materials.isEmpty()) {
+            sb.append("No material found\n");
+        } else {
+            for (PlannerMaterial material : materials) {
+                sb.append("- ").append(material.toString()).append("\n");
             }
         }
         return sb.toString();
     }
+
 
 
     public void addHabitToKanban(State state, int id) throws Exception {

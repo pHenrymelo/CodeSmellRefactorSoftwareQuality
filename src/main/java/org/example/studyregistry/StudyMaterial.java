@@ -58,26 +58,34 @@ public class StudyMaterial{
         return response;
     }
 
-    public Map<String, Integer> getReferenceCountMap(){
-        Map<String, Integer> response = new HashMap<>();
-        response.put("Audio References", 0);
-        response.put("Video References", 0);
-        response.put("Text References", 0);
+    public Map<String, Integer> getReferenceCountMap() {
+        Map<String, Integer> response = initializeReferenceMap();
 
         for (Reference reference : references) {
             if (!reference.isCountable()) continue;
-
-            if (reference instanceof AudioReference) {
-                response.put("Audio References", response.get("Audio References") + 1);
-            } else if (reference instanceof VideoReference) {
-                response.put("Video References", response.get("Video References") + 1);
-            } else if (reference instanceof TextReference) {
-                response.put("Text References", response.get("Text References") + 1);
-            }
+            incrementReferenceCount(response, reference);
         }
 
         setReferenceCount(response);
         return response;
+    }
+
+    private Map<String, Integer> initializeReferenceMap() {
+        Map<String, Integer> map = new HashMap<>();
+        map.put("Audio References", 0);
+        map.put("Video References", 0);
+        map.put("Text References", 0);
+        return map;
+    }
+
+    private void incrementReferenceCount(Map<String, Integer> map, Reference reference) {
+        if (reference instanceof AudioReference) {
+            map.put("Audio References", map.get("Audio References") + 1);
+        } else if (reference instanceof VideoReference) {
+            map.put("Video References", map.get("Video References") + 1);
+        } else if (reference instanceof TextReference) {
+            map.put("Text References", map.get("Text References") + 1);
+        }
     }
 
 }

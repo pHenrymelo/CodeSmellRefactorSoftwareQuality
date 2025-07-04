@@ -1,5 +1,11 @@
 package org.example.studysearch;
 
+import org.example.studycards.CardManager;
+import org.example.studyplanner.HabitTracker;
+import org.example.studyplanner.TodoTracker;
+import org.example.studyregistry.StudyMaterial;
+import org.example.studyregistry.StudyTaskManager;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +26,7 @@ public class SearchLog {
         this.isLocked = false;
     }
 
-    // ✅ API moderna e usada internamente pelas classes de busca
+    // API moderna e usada internamente pelas classes de busca
     public void logSearch(String term) {
         if (isLocked) return;
 
@@ -29,7 +35,7 @@ public class SearchLog {
         numUsages++;
     }
 
-    // ✅ Método legado restaurado para compatibilidade com testes
+    // Método legado restaurado para compatibilidade com testes
     public void addSearchHistory(String searchHistory) {
         this.searchHistory.add(searchHistory);
     }
@@ -60,5 +66,48 @@ public class SearchLog {
 
     public void setLogName(String logName) {
         this.logName = logName;
+    }
+
+    public List<String> performGeneralSearch(String text) {
+        List<String> results = new ArrayList<>();
+        results.addAll(CardManager.getCardManager().searchInCards(text));
+        results.addAll(HabitTracker.getHabitTracker().searchInHabits(text));
+        results.addAll(TodoTracker.getInstance().searchInTodos(text));
+        results.addAll(StudyMaterial.getStudyMaterial().searchInMaterials(text));
+        results.addAll(StudyTaskManager.getStudyTaskManager().searchInRegistries(text));
+
+        logSearch(text);
+        results.add("\nLogged in: " + getLogName());
+        return results;
+    }
+
+    // Novo método para pesquisa exclusiva em materiais
+    public List<String> searchMaterials(String text) {
+        List<String> results = new ArrayList<>();
+        results.addAll(StudyMaterial.getStudyMaterial().searchInMaterials(text));
+
+        logSearch(text);
+
+        results.add("\nLogged in: " + getLogName());
+        return results;
+    }
+
+    public List<String> searchWithLog(String text) {
+        List<String> results = new ArrayList<>();
+        results.addAll(CardManager.getCardManager().searchInCards(text));
+        results.addAll(HabitTracker.getHabitTracker().searchInHabits(text));
+        results.addAll(TodoTracker.getInstance().searchInTodos(text));
+        results.addAll(StudyTaskManager.getStudyTaskManager().searchInRegistries(text));
+
+        logSearch(text);
+
+        results.add("\nLogged in: " + getLogName());
+        return results;
+    }
+
+    public void printLog() {
+        String response = getLogName() + " was used: " + getNumUsages() + " times\nSearch Log\n";
+        response += String.join(", ", getSearchHistory());
+        System.out.println(response);
     }
 }
