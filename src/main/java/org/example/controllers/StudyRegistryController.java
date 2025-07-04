@@ -1,30 +1,25 @@
 package org.example.controllers;
 
-import org.example.studymaterial.AudioReference;
-import org.example.studymaterial.Reference;
-import org.example.studymaterial.TextReference;
-import org.example.studymaterial.VideoReference;
 import org.example.studyregistry.*;
+import org.example.studymaterial.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.example.controllers.MainController.getInput;
 import static org.example.controllers.MainController.validateInput;
 
 public class StudyRegistryController {
-    StudyTaskManager studyTaskManager = StudyTaskManager.getStudyTaskManager();
-    StudyMaterial studyMaterial = StudyMaterial.getStudyMaterial();
-    private Map<String, Runnable> actions = new HashMap<>();
+
+    private final StudyTaskManager studyTaskManager = StudyTaskManager.getStudyTaskManager();
+    private final StudyMaterial studyMaterial = StudyMaterial.getStudyMaterial();
+    private final Map<String, Runnable> actions = new HashMap<>();
 
     public StudyRegistryController() {
         assignActions();
     }
 
-    void assignActions(){
+    private void assignActions() {
         actions.put("1", this::handleAddStudyTask);
         actions.put("2", this::handleAddStudyGoal);
         actions.put("3", this::handleAddStudyMaterial);
@@ -34,37 +29,43 @@ public class StudyRegistryController {
         actions.put("7", this::handleGetWeekResponsibilities);
     }
 
-    private void handleMethodHeader(String header){
-        System.out.println("~~~~" + header + "~~~~\n");
+    private void handleMethodHeader(String header) {
+        System.out.println("~~~~ " + header + " ~~~~\n");
     }
 
-    private Task getStudyTaskInfo(){
-        System.out.println("Type the following info: title, description, author \n");
-        String title = getInput();
-        String description = getInput();
-        String author = getInput();
-        return new Task(title, description, author, LocalDateTime.now());
+    // --- Study Task ---
+
+    private Task getStudyTaskInfo() {
+        handleMethodHeader("Study Task Creation");
+        System.out.println("Type the following info: title, description, author");
+        return new Task(getInput(), getInput(), getInput(), LocalDateTime.now());
     }
 
-    private void handleAddStudyTask(){
+    private void handleAddStudyTask() {
         Task task = getStudyTaskInfo();
         studyTaskManager.addRegistry(task);
     }
 
-    private void handleSetObjective(StudyObjective objective){
-        handleMethodHeader("(Study Objective Edit)");
-        System.out.println("Type the following info: Integer id, Integer priority " +
-                "Integer practicedDays, int day, int month, int year, String name, String title, String description, " +
-                "String topic, String objectiveInOneLine, String objectiveFullDescription, String motivation, " +
-                "Double duration, boolean isActive  \n");
-        objective.handleSetObjective(Integer.parseInt(getInput()), Integer.parseInt(getInput()),Integer.parseInt(getInput()),Integer.parseInt(getInput()),Integer.parseInt(getInput()),
-                Integer.parseInt(getInput()), getInput(), getInput(), getInput(), getInput(), getInput(), getInput(), getInput(),
-                Double.parseDouble(getInput()), Boolean.parseBoolean(getInput()));
+    // --- Study Objective ---
+
+    public void handleSetObjective(StudyObjective objective) {
+        handleMethodHeader("Study Objective Edit");
+        promptUserForObjectiveInput();
+        ObjectiveData data = ObjectiveData.fromUserInput(new Scanner(System.in));
+        objective.handleSetObjective(data);
     }
 
-    private StudyObjective getStudyObjectiveInfo(){
-        handleMethodHeader("(Study Objective Creation)");
-        System.out.println("Type the following info: title, description \n");
+    private void promptUserForObjectiveInput() {
+        System.out.println("Type the following info in order: " +
+                "Integer id, Integer priority, Integer practicedDays, int day, int month, int year, " +
+                "String name, String title, String description, String topic, " +
+                "String objectiveInOneLine, String objectiveFullDescription, String motivation, " +
+                "Double duration, boolean isActive\n");
+    }
+
+    private StudyObjective getStudyObjectiveInfo() {
+        handleMethodHeader("Study Objective Creation");
+        System.out.println("Type the following info: title, description");
         String title = getInput();
         String description = getInput();
         StudyObjective studyObjective = new StudyObjective(title, description);
@@ -73,80 +74,134 @@ public class StudyRegistryController {
         return studyObjective;
     }
 
-    private StudyPlan getStudyPlanInfo(){
-        handleMethodHeader("(Study Plan Creation)");
-        System.out.println("Type the following info: name \n");
+    private void handleAddStudyObjective() {
+        getStudyObjectiveInfo();
+    }
+
+    // --- Study Plan ---
+
+    private StudyPlan getStudyPlanInfo() {
+        handleMethodHeader("Study Plan Creation");
+        System.out.println("Type the following info: name");
         String name = getInput();
         StudyObjective studyObjective = getStudyObjectiveInfo();
-        StudyPlan plan = new StudyPlan(name, studyObjective,  new ArrayList<>());
+        StudyPlan plan = new StudyPlan(name, studyObjective, new ArrayList<>());
         studyTaskManager.addRegistry(plan);
         return plan;
     }
 
-    private void handleSetSteps(StudyPlan studyPlan){
-        handleMethodHeader("(Study Plan Edit)");
-        System.out.println("Type the following info: String firstStep, String resetStudyMechanism, String consistentStep, " +
-                "String seasonalSteps, String basicSteps, String mainObjectiveTitle, String mainGoalTitle, String mainMaterialTopic, " +
-                "String mainTask, @NotNull  Integer numberOfSteps, boolean isImportant. " +
-                "The Date to start is today, the date to end is x days from now, type the quantity of days\n");
-        LocalDateTime createdAT = LocalDateTime.now();
-        studyPlan.assignSteps(getInput(), getInput(), getInput(), getInput(), getInput(), getInput(), getInput(), getInput(), getInput(),
-                Integer.parseInt(getInput()), Boolean.parseBoolean(getInput()), createdAT, createdAT.plusDays(Long.parseLong(getInput())));
+    private void handleSetSteps(StudyPlan studyPlan) {
+        handleMethodHeader("Study Plan Edit");
+        printInstructions();
+
+        List<String> stringProperties = readStringProperties(9);
+        int numberOfSteps = readInt();
+        boolean isImportant = readBoolean();
+        long durationInDays = readLong();
+
+        LocalDateTime createdAt = LocalDateTime.now();
+        LocalDateTime endsAt = createdAt.plusDays(durationInDays);
+
+        StudyStepDetails details = buildStudyStepDetails(stringProperties, numberOfSteps, isImportant, createdAt, endsAt);
+
+        studyPlan.assignSteps(details);
     }
 
-    private StudyGoal getStudyGoalInfo(){
-        handleMethodHeader("(Study Goal Creation)");
-        System.out.println("Type the following info: name \n");
+    private void printInstructions() {
+        System.out.println("""
+    Digite os seguintes campos, cada um seguido de ENTER:
+    1) firstStep
+    2) resetStudyMechanism
+    3) consistentStep
+    4) seasonalSteps
+    5) basicSteps
+    6) mainObjectiveTitle
+    7) mainGoalTitle
+    8) mainMaterialTopic
+    9) mainTask
+    10) numberOfSteps (int)
+    11) isImportant (boolean)
+    12) durationInDays (long)
+    """);
+    }
+
+    private List<String> readStringProperties(int count) {
+        List<String> properties = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            properties.add(getInput());
+        }
+        return properties;
+    }
+
+    private int readInt() {
+        return Integer.parseInt(getInput());
+    }
+
+    private boolean readBoolean() {
+        return Boolean.parseBoolean(getInput());
+    }
+
+    private long readLong() {
+        return Long.parseLong(getInput());
+    }
+
+    private StudyStepDetails buildStudyStepDetails(List<String> stringProperties, int numberOfSteps, boolean isImportant,
+                                                   LocalDateTime startDate, LocalDateTime endDate) {
+        return new StudyStepDetails.Builder()
+                .firstStep(stringProperties.get(0))
+                .resetStudyMechanism(stringProperties.get(1))
+                .consistentStep(stringProperties.get(2))
+                .seasonalSteps(stringProperties.get(3))
+                .basicSteps(stringProperties.get(4))
+                .mainObjectiveTitle(stringProperties.get(5))
+                .mainGoalTitle(stringProperties.get(6))
+                .mainMaterialTopic(stringProperties.get(7))
+                .mainTask(stringProperties.get(8))
+                .numberOfSteps(numberOfSteps)
+                .isImportant(isImportant)
+                .startDate(startDate)
+                .endDate(endDate)
+                .build();
+    }
+
+
+    private void handleAddStudyPlan() {
+        getStudyPlanInfo();
+        System.out.println("Study Plan Added");
+    }
+
+    // --- Study Goal ---
+
+    private StudyGoal getStudyGoalInfo() {
+        handleMethodHeader("Study Goal Creation");
+        System.out.println("Type the following info: name");
         String name = getInput();
         StudyPlan studyPlan = getStudyPlanInfo();
         handleSetSteps(studyPlan);
-        StudyObjective studyObjective = studyPlan.getObjective();
-        return new StudyGoal(name, studyObjective, studyPlan);
+        StudyObjective objective = studyPlan.getObjective();
+        return new StudyGoal(name, objective, studyPlan);
     }
 
-    private void handleAddStudyGoal(){
+    private void handleAddStudyGoal() {
         StudyGoal goal = getStudyGoalInfo();
         studyTaskManager.addRegistry(goal);
     }
 
-    private void editAudio(AudioReference audioReference){
-        handleMethodHeader("(Audio Edit)");
-        System.out.println("Type the following info:  AudioReference. AudioQuality audioQuality, boolean isDownloadable, " +
-                "String title, String description, String link, String accessRights, String license, String language, int rating, " +
-                "int viewCount, int shareCount \n");
-        AudioReference.AudioQuality quality =AudioReference.audioQualityAdapter(getInput());
-        audioReference.editAudio(quality, Boolean.parseBoolean(getInput()), getInput(), getInput(), getInput(), getInput(),
-                getInput(), getInput(), Integer.parseInt(getInput()), Integer.parseInt(getInput()), Integer.parseInt(getInput()));
+    // --- Study Material ---
+
+    private void handleAddStudyMaterial() {
+        Reference reference = addStudyMaterial();
+        if (reference != null) {
+            studyMaterial.addReference(reference);
+        }
     }
 
-    private AudioReference addAudioReference(){
-        handleMethodHeader("(Audio Reference Creation)");
-        System.out.println("Type the following info: Audio Quality ( LOW | MEDIUM | HIGH | VERY_HIGH) \n");
-        AudioReference audioReference = new AudioReference(AudioReference.audioQualityAdapter(getInput()));
-        editAudio(audioReference);
-        return audioReference;
-    }
+    private Reference addStudyMaterial() {
+        handleMethodHeader("Study Material Creation");
+        System.out.println("Type the following info: (AUDIO | VIDEO | TEXT)");
+        String type = getInput().toLowerCase();
 
-    private VideoReference addVideoReference(){
-        handleMethodHeader("(Video Reference Creation)");
-        System.out.println("Type the following info: boolean isAvailable, String title, " +
-                "String description, String resolution, String frameRate, String videoFormat, String accessRights \n");
-        return new VideoReference(Boolean.parseBoolean(getInput()), getInput(), getInput(), getInput(), getInput(),
-                getInput(), getInput());
-    }
-
-    private TextReference addTextReference(){
-        handleMethodHeader("(Text Reference Creation)");
-        System.out.println("Type the following info:  String title, String language, int wordCount, String format, String accessRights \n");
-        return new TextReference(getInput(), getInput(), Integer.parseInt(getInput()), getInput(),
-                getInput());
-    }
-
-    private Reference addStudyMaterial(){
-        handleMethodHeader("(Study Material Creation)");
-        System.out.println("Type the following info: ( AUDIO | VIDEO | TEXT ) \n");
-        String type = getInput();
-        return switch (type.toLowerCase()) {
+        return switch (type) {
             case "audio" -> addAudioReference();
             case "video" -> addVideoReference();
             case "text" -> addTextReference();
@@ -154,62 +209,133 @@ public class StudyRegistryController {
         };
     }
 
-    private void handleAddStudyMaterial(){
-        Reference reference = addStudyMaterial();
-        if(reference != null){
-            studyMaterial.addReference(reference);
-        }
+    // --- Audio ---
+
+    private AudioReference addAudioReference() {
+        handleMethodHeader("Audio Reference Creation");
+        System.out.println("Type the following info: Audio Quality (LOW | MEDIUM | HIGH | VERY_HIGH)");
+        AudioReference audio = new AudioReference(AudioReference.audioQualityAdapter(getInput()));
+        editAudio(audio);
+        return audio;
     }
 
-    private void handleAddStudyObjective(){
-        getStudyObjectiveInfo();
+    private void editAudio(AudioReference audioReference) {
+        handleMethodHeader("Audio Edit");
+        AudioMetadata metadata = getAudioMetadataFromInput();
+        audioReference.editAudio(metadata);
     }
 
-    private void handleAddStudyPlan(){
-        getStudyPlanInfo();
-        System.out.println("Study Plan Added");
+    private AudioMetadata getAudioMetadataFromInput() {
+        System.out.println("""
+            Type the following info:
+            AudioQuality, isDownloadable, title, description, link,
+            accessRights, license, language, rating, viewCount, shareCount
+        """);
+
+        return new AudioMetadata.Builder()
+                .audioQuality(AudioReference.audioQualityAdapter(getInput()))
+                .isDownloadable(Boolean.parseBoolean(getInput()))
+                .title(getInput())
+                .description(getInput())
+                .link(getInput())
+                .accessRights(getInput())
+                .license(getInput())
+                .language(getInput())
+                .rating(Integer.parseInt(getInput()))
+                .viewCount(Integer.parseInt(getInput()))
+                .shareCount(Integer.parseInt(getInput()))
+                .build();
     }
 
-    private void getWeekInfo(){
-        System.out.println("(Study Task Manager Week Set Up) Type the following info: String planName, String objectiveTitle, " +
-                "String objectiveDescription, String materialTopic, String materialFormat, String goal, String reminderTitle, " +
-                "String reminderDescription, String mainTaskTitle, String mainHabit, String mainCardStudy");
-        studyTaskManager.setUpWeek(getInput(), getInput(), getInput(), getInput(), getInput(), getInput(), getInput(), getInput(),
-                getInput(), getInput(), getInput());
+    // --- Video ---
+
+    private VideoReference addVideoReference() {
+        handleMethodHeader("Video Reference Creation");
+        System.out.println("""
+            Type the following info:
+            isAvailable, title, description, resolution,
+            frameRate, videoFormat, accessRights
+        """);
+
+        return new VideoReference(
+                Boolean.parseBoolean(getInput()), getInput(), getInput(), getInput(),
+                getInput(), getInput(), getInput()
+        );
     }
 
-    private void handleSetUpWeek(){
+    // --- Text ---
+
+    private TextReference addTextReference() {
+        handleMethodHeader("Text Reference Creation");
+        System.out.println("Type the following info: title, language, wordCount, format, accessRights");
+        return new TextReference(
+                getInput(), getInput(), Integer.parseInt(getInput()),
+                getInput(), getInput()
+        );
+    }
+
+    // --- Week Setup ---
+
+    private void handleSetUpWeek() {
         getWeekInfo();
     }
 
-    private void handleGetWeekResponsibilities(){
+    private void getWeekInfo() {
+        System.out.println("""
+        (Study Task Manager Week Set Up) Type the following info:
+        planName, objectiveTitle, objectiveDescription, materialTopic,
+        materialFormat, goal, reminderTitle, reminderDescription,
+        mainTaskTitle, mainHabit, mainCardStudy
+    """);
+
+        WeekSetupData data = new WeekSetupData.Builder()
+                .planName(getInput())
+                .objectiveTitle(getInput())
+                .objectiveDescription(getInput())
+                .materialTopic(getInput())
+                .materialFormat(getInput())
+                .goal(getInput())
+                .reminderTitle(getInput())
+                .reminderDescription(getInput())
+                .mainTaskTitle(getInput())
+                .mainHabit(getInput())
+                .mainCardStudy(getInput())
+                .build();
+
+        studyTaskManager.setUpWeek(data);
+    }
+    // --- Responsibilities ---
+
+    private void handleGetWeekResponsibilities() {
         List<String> responsibilities = studyTaskManager.getWeekResponsibilities();
         System.out.println(String.join(", ", responsibilities));
     }
 
-    public void handleRegistryInput(){
-        try{
-            while(true){
+    // --- CLI Controller ---
+
+    public void handleRegistryInput() {
+        try {
+            while (true) {
                 controllerOptions();
                 String response = validateInput(actions);
-                if(response == null) {return;}
+                if (response == null) return;
                 actions.get(response).run();
             }
-        }catch (Exception e){
-            System.out.println(e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
-    public static void controllerOptions(){
+    public static void controllerOptions() {
         System.out.println("""
-                0 - return
-                1 - add study task
-                2 - add study goal
-                3 - add study material (audio, video, text)
-                4 - add study objective
-                5 - add study plan
-                6 - set up week
-                7 - get week responsibilities
-               """);
+            0 - return
+            1 - add study task
+            2 - add study goal
+            3 - add study material (audio, video, text)
+            4 - add study objective
+            5 - add study plan
+            6 - set up week
+            7 - get week responsibilities
+        """);
     }
 }

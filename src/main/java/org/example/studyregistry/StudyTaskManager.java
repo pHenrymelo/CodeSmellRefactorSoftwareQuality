@@ -3,7 +3,6 @@ package org.example.studyregistry;
 import org.example.studymaterial.Reference;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class StudyTaskManager {
@@ -13,7 +12,7 @@ public class StudyTaskManager {
     List<String> weekResponsibilities = List.of();
 
     private StudyTaskManager(){
-        this.registryList = new ArrayList<Registry>();
+        this.registryList = new ArrayList<>();
     }
 
     public static StudyTaskManager getStudyTaskManager(){
@@ -27,26 +26,36 @@ public class StudyTaskManager {
         return weekResponsibilities;
     }
 
-    public void setUpWeek(String planName, String objectiveTitle, String objectiveDescription, String materialTopic,
-                          String materialFormat, String goal, String reminderTitle, String reminderDescription,
-                          String mainTaskTitle, String mainHabit, String mainCardStudy){
-        this.weekResponsibilities = new ArrayList<>();
-        this.weekResponsibilities.addAll(Arrays.asList(planName, objectiveTitle, objectiveDescription, materialTopic, materialFormat, goal, reminderTitle, reminderDescription, mainTaskTitle, mainHabit, mainCardStudy));
+    public void setUpWeek(WeekSetupData data){
+        this.weekResponsibilities = new ArrayList<>(data.toList());
     }
 
     public void handleSetUpWeek(List<String> stringProperties){
-        setUpWeek(stringProperties.get(0), stringProperties.get(1), stringProperties.get(2), stringProperties.get(3),
-                stringProperties.get(4), stringProperties.get(5), stringProperties.get(6), stringProperties.get(7),
-                stringProperties.get(8), stringProperties.get(9), stringProperties.get(10));
-    }
+        WeekSetupData data = new WeekSetupData.Builder()
+                .planName(stringProperties.get(0))
+                .objectiveTitle(stringProperties.get(1))
+                .objectiveDescription(stringProperties.get(2))
+                .materialTopic(stringProperties.get(3))
+                .materialFormat(stringProperties.get(4))
+                .goal(stringProperties.get(5))
+                .reminderTitle(stringProperties.get(6))
+                .reminderDescription(stringProperties.get(7))
+                .mainTaskTitle(stringProperties.get(8))
+                .mainHabit(stringProperties.get(9))
+                .mainCardStudy(stringProperties.get(10))
+                .build();
 
+        setUpWeek(data);
+    }
 
     public void addRegistry(Registry registry){
         registryList.add(registry);
     }
+
     public void removeRegistry(Registry registry){
         registryList.remove(registry);
     }
+
     public List<Registry> getRegistryList(){
         return registryList;
     }
@@ -61,5 +70,4 @@ public class StudyTaskManager {
         }
         return response;
     }
-
 }
